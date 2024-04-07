@@ -51,7 +51,13 @@ router.post(
   userAuthController.login
 );
 
+router.get("/google", userAuthController.googleAuth);
+
+
 router.post("/logout", userAuthController.logOut);
+
+router.post("/send-verification-email/:userId",userAuthController.sendVerificationEmail)
+router.post("/verify-email/:userId",userAuthController.verifyEmail)
 
 router.post(
   "/forgot-password-email",
@@ -92,5 +98,5 @@ router.post(
   userAuthController.resetPassword
 );
 
-router.get("/google", userAuthController.googleAuth);
+
 export default router;
