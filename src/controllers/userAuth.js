@@ -130,6 +130,68 @@ class userAuthController {
       .json({ message: "google authentication successfull" });
   };
 
+  static sendVerificationEmail = async (req, res) => {
+    const { userId } = req.params;
+    const user = await UserModel.findById(userId, "email verification");
+    
+    if (!user) {
+      return res.status(422).json({ message: "Account is not registered" });
+    }
+    if (user.verification.isVerified) {
+      return res.status(422).json({ message: "Account is already verified" });
+    }
+    //send email with otp
+    // generate the admin code
+    const code = Math.floor(100000 + Math.random() * 900000);
+
+    // calculate the expiration date (e.g. 15 minutes from now)
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: user.email,
+      subject: "BizChrome email verification",
+      text: "Hello world?", // plain text body
+      html: `<span>Here is your one-time OTP: ${code}</span>
+      <br>
+      <span>Note: This OTP will expire in 15 minutes.</span>`, // html body
+    });
+
+    const userData = await UserModel.findOneAndUpdate(
+      { _id: userId },
+      { verification: { code, expiresAt, isVerified: false } }
+    );
+    return res.status(200).send({
+      status: "success",
+      message: "Verification code sent successfully",
+      info: info,
+    });
+  };
+
+  static verifyEmail = async (req, res) => {
+    const { code } = req.body;
+    const { userId } = req.params;
+
+    const currentTime = new Date();
+
+    const user = await UserModel.findOne({
+      _id: userId,
+      "verification.code": code,
+      "verification.expiresAt": { $gt: currentTime },
+    });
+   
+    if (!user) {
+      return res.status(422).json({ message: "Invalid code" });
+    }
+    const updated = await UserModel.updateOne(
+      { _id: userId },
+      { verification: { isVerified: true} }
+    );
+    if(updated.modifiedCount > 0){
+      return res.status(200).json({message:"Account verified successfully"})
+    }
+    return res.status(422).json({message:"Error verifying email"})
+  };
+
   static logOut = async (req, res) => {
     console.log("logout request");
 
@@ -157,7 +219,6 @@ class userAuthController {
         process.env.NODE_ENV === "local"
           ? process.env.BACKEND_URL
           : process.env.PRODUCTION_URL;
-      console.log(app_url, "appurll");
 
       const link = `${app_url}/auth/login/reset-password/${user._id}/${token}`;
 
