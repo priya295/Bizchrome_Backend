@@ -12,6 +12,14 @@ const userSchema = new mongoose.Schema({
     expiresAt: Date,
     isVerified: { type: Boolean, default: false },
   },
+  packages: [
+    {
+      packageId: { type: mongoose.Types.ObjectId, ref: "Package" },
+      date: { type: Date },
+      paymentDetails: { paymentId: String, orderId: String, signature: String },
+    },
+  ],
+  credits:{type:Number,default:10}
 });
 const UserModel = mongoose.model("User", userSchema);
 export default UserModel;

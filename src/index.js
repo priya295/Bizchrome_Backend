@@ -6,15 +6,19 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import userAuth from './routes/userAuth.js'
+import payment from './routes/authenticated/payment.js'
 import oAuth from './routes/oAuth.js'
 import connectDb from "./config/mongo.js";
+import packageRoutes from './routes/authenticated/package.js'
+import verifyToken from "./middlewares/authentication.js";
 
 const app = express();
 //multer config
 const upload = multer({})
 app.use(upload.any())
 
-app.use(bodyParser.urlencoded({extended:true}))
+app.use(express.json());
+app.use(bodyParser.urlencoded({extended:true}));
 app.use(cookieParser());
 
 //cors config
@@ -32,6 +36,10 @@ app.use('/auth',userAuth)
 
 //hit this route for google authentication
 app.use('/google-auth', oAuth);
+
+//payment routes - apply authentication middleware
+app.use('/user/payment',payment)
+app.use('/user/package',packageRoutes)
 
 //error handler
 app.use(errorHandler);
