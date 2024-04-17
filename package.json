@@ -3,7 +3,8 @@
   "main": "./src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon ./src/index.js"
+    "dev": "nodemon ./src/index.js",
+    "start":"nodemon ./src/index.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
