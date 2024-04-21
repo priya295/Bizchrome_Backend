@@ -13,7 +13,7 @@ import packageRoutes from './routes/authenticated/package.js'
 import verifyToken from "./middlewares/authentication.js";
 import userInfo from "./routes/authenticated/user.js"
 import path from 'path'
-import messageModel from "./models/message.js";
+// import messageModel from "./models/message.js";
 // import http from 'http'
 // import Server from 'socket-io'
 
