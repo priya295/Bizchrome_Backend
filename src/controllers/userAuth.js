@@ -7,19 +7,23 @@ import transporter from "../config/email.js";
 
 class userAuthController {
   static register = async (req, res) => {
-    console.log("register request initiated");
+    console.log("register request initiated", req.body);
     const { email, password } = req.body;
-    const manualAndGoogleRegisteredUser = await UserModel.findOne({
-      email,
-      google_auth: true,
-      manual_register: true,
-    });
-    const manualRegisteredUser = await UserModel.findOne({
-      email,
-      manual_register: true,
-    });
+    // const manualAndGoogleRegisteredUser = await UserModel.findOne({
+    //   email,
+    //   google_auth: true,
+    //   manual_register: true,
+    // });
+    // const manualRegisteredUser = await UserModel.findOne({
+    //   email,
+    //   manual_register: true,
+    // });
 
-    if (manualAndGoogleRegisteredUser || manualRegisteredUser) {
+    // if (manualAndGoogleRegisteredUser || manualRegisteredUser) {
+    //   return res.status(400).json({ message: "User already exist" });
+    // }
+    const isUserExist = await UserModel.findOne({ email });
+    if (isUserExist) {
       return res.status(400).json({ message: "User already exist" });
     }
     const salt = await bcrypt.genSalt(12);
@@ -74,7 +78,7 @@ class userAuthController {
     });
     console.log("login request completed");
 
-    res.status(200).json({ userId: user._id });
+    res.status(200).json({ userId: user._id, message: "Login successfull" });
   };
 
   // this route handler is not hit directly from frontend - this is redirect url from googleAuth
@@ -125,15 +129,17 @@ class userAuthController {
     });
 
     console.log("google auth request completed");
-    return res
-      .status(200)
-      .json({ message: "google authentication successfull" });
+    const redirectUrl = `${process.env.FRONTEND_URL}/app/home`;
+    return res.redirect(redirectUrl);
+    // return res
+    //   .status(200)
+    //   .json({ message: "google authentication successfull" });
   };
 
   static sendVerificationEmail = async (req, res) => {
-    const { userId } = req.params;
-    const user = await UserModel.findById(userId, "email verification");
-    
+    const { email } = req.params;
+    const user = await UserModel.findOne({ email }, "email verification");
+
     if (!user) {
       return res.status(422).json({ message: "Account is not registered" });
     }
@@ -157,7 +163,7 @@ class userAuthController {
     });
 
     const userData = await UserModel.findOneAndUpdate(
-      { _id: userId },
+      { email },
       { verification: { code, expiresAt, isVerified: false } }
     );
     return res.status(200).send({
@@ -168,28 +174,27 @@ class userAuthController {
   };
 
   static verifyEmail = async (req, res) => {
-    const { code } = req.body;
-    const { userId } = req.params;
-
+    const { otp } = req.body;
+    const { email } = req.params;
     const currentTime = new Date();
 
     const user = await UserModel.findOne({
-      _id: userId,
-      "verification.code": code,
+      email,
+      "verification.code": otp,
       "verification.expiresAt": { $gt: currentTime },
     });
-   
+
     if (!user) {
       return res.status(422).json({ message: "Invalid code" });
     }
     const updated = await UserModel.updateOne(
-      { _id: userId },
-      { verification: { isVerified: true} }
+      { email },
+      { verification: { isVerified: true } }
     );
-    if(updated.modifiedCount > 0){
-      return res.status(200).json({message:"Account verified successfully"})
+    if (updated.modifiedCount > 0) {
+      return res.status(200).json({ message: "Account verified successfully" });
     }
-    return res.status(422).json({message:"Error verifying email"})
+    return res.status(422).json({ message: "Error verifying email" });
   };
 
   static logOut = async (req, res) => {
@@ -217,9 +222,10 @@ class userAuthController {
 
       const app_url =
         process.env.NODE_ENV === "local"
-          ? process.env.BACKEND_URL
+          ? process.env.FRONTEND_URL
           : process.env.PRODUCTION_URL;
 
+      console.log(process.env.FRONTEND_URL, "dyufgdf", app_url);
       const link = `${app_url}/auth/login/reset-password/${user._id}/${token}`;
 
       // send email
@@ -238,7 +244,7 @@ class userAuthController {
         info: info,
       });
     } else {
-      return res.status(401).send({ error: "Invalid email" });
+      return res.status(400).send({ message: "Invalid email" });
     }
   };
 
