@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
+  roleType:{type:String,enum:["freelance","client"]},
+  location:String,
   google_sub: { type: String },
   google_auth: { type: Boolean, default: false },
   manual_register: { type: Boolean, default: false },
@@ -19,7 +21,9 @@ const userSchema = new mongoose.Schema({
       paymentDetails: { paymentId: String, orderId: String, signature: String },
     },
   ],
-  credits:{type:Number,default:10}
+  credits:{type:Number,default:10},
+  socket_id:{type:String},
+  status:{type:String,enum:['Online','Offline']}
 });
 const UserModel = mongoose.model("User", userSchema);
 export default UserModel;
