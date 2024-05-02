@@ -206,7 +206,7 @@ class userAuthController {
     });
     console.log("logout request completed");
 
-    res.end();
+    res.status(200).json({status:"success",message:"logout successfully"});
   };
 
   static sendForgotPasswordEmail = async (req, res) => {

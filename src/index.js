@@ -12,8 +12,9 @@ import connectDb from "./config/mongo.js";
 import packageRoutes from './routes/authenticated/package.js'
 import verifyToken from "./middlewares/authentication.js";
 import userInfo from "./routes/authenticated/user.js"
+import serviceRoutes from "./routes/authenticated/service.js"
 import path from 'path'
-import messageModel from "./models/message.js";
+// import messageModel from "./models/message.js";
 // import http from 'http'
 // import Server from 'socket-io'
 
@@ -105,14 +106,19 @@ app.get("/", (req, res) => {
 });
 
 app.use('/auth',userAuth)
+app.use('/validate-token',verifyToken,(req,res)=>{
+  return res.status(200).send("Token verified successfully")
+})
 
 //hit this route for google authentication
 app.use('/google-auth', oAuth);
 
 //payment routes - apply authentication middleware
-app.use('/user',verifyToken,userInfo)
+app.use('/userInfo',verifyToken,userInfo)
 app.use('/user/payment',payment)
 app.use('/user/package',packageRoutes)
+app.use('/user/service',serviceRoutes)
+
 
 //error handler
 app.use(errorHandler);
