@@ -44,7 +44,7 @@ class userAuthController {
       );
       res.cookie("auth_token", token, {
         httpOnly: true,
-        SameSite: 'None',
+        sameSite: 'none',
         secure: process.env.NODE_ENV === "production",
         maxAge: 86400000,
       });
@@ -74,7 +74,7 @@ class userAuthController {
     });
     res.cookie("auth_token", token, {
       httpOnly: true,
-      SameSite: 'None',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
@@ -126,7 +126,7 @@ class userAuthController {
 
     res.cookie("auth_token", token, {
       httpOnly: true,
-      SameSite: 'None',
+      sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
