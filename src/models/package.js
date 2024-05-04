@@ -6,6 +6,7 @@ const packageSchema = new mongoose.Schema({
   name: { type: String }, // Name of the package
   credits: { type: Number }, // Number of credits in the package
   amount: { type: Number }, // Amount of the package
+discount:{type:Number}
 });
 
 // Create a model based on the schema
@@ -15,7 +16,7 @@ const PackageModel = mongoose.model("Package", packageSchema);
 const defaultPackages = [
   { name: "Basic", credits: 10, amount: 100 },
   { name: "Standard", credits: 23, amount: 200 },
-  { name: "Premium", credits: 35, amount: 300 },
+  { name: "Premium", credits: 35, amount: 300 ,discount:10},
 ];
 
 // Function to insert default packages into the database

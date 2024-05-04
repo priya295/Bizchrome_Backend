@@ -2,21 +2,31 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { validatePaymentVerification } from "razorpay/dist/utils/razorpay-utils.js";
 import UserModel from "../../models/user.js";
+import PackageModel from "../../models/package.js";
 // import UserModel from "../models/user";
 class paymentController {
   static createOrder = async (req, res) => {
     try {
       const { packageId } = req.params;
       const userId = req.userId;
-
       const { amount, currency } = req.body;
+
       const instance = new Razorpay({
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
 
+      const packageInfo = await PackageModel.findById(packageId,'discount')
+      let amountToBePaid = amount;
+      if(packageInfo.discount){
+        amountToBePaid =
+        parseInt(amount) -
+        parseInt(amount * (packageInfo.discount / 100));
+      }
+
+
       const options = {
-        amount,
+        amount : amountToBePaid *100,
         currency,
         receipt: crypto.randomBytes(10).toString("hex"),
       };
@@ -37,14 +47,15 @@ class paymentController {
 
   static verifyPayment = async (req, res) => {
     try {
+      console.log(req.body,"requestt");
       const {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
         packageId,
-        userId,
       } = req.body;
-      // const userId = "661253a110261c6adc74b649";
+      console.log(razorpay_order_id,"orderrr");
+      const userId = req.userId
 
       const isVerified = validatePaymentVerification(
         { order_id: razorpay_order_id, payment_id: razorpay_payment_id },
