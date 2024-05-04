@@ -13,6 +13,8 @@ import packageRoutes from './routes/authenticated/package.js'
 import verifyToken from "./middlewares/authentication.js";
 import userInfo from "./routes/authenticated/user.js"
 import serviceRoutes from "./routes/authenticated/service.js"
+import conversation from './routes/authenticated/conversation.js'
+import {Server} from 'socket.io'
 import path from 'path'
 // import messageModel from "./models/message.js";
 // import http from 'http'
@@ -118,12 +120,29 @@ app.use('/userInfo',verifyToken,userInfo)
 app.use('/user/payment',payment)
 app.use('/user/package',packageRoutes)
 app.use('/user/service',serviceRoutes)
+app.use('/user/chat',verifyToken,conversation)
 
 
 //error handler
 app.use(errorHandler);
 
+
 const port = process.env.PORT || 8000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   return console.log(`Express is listening at http://localhost:${port}`);
 });
+
+const io = new Server(server,{
+  pingTimeout: 60000,
+  cors: {
+    origin: "http://127.0.0.1:5173",
+  }
+})
+
+io.on("connection", (socket)=>{
+  console.log('connected to socket.io')
+    socket.on('setup', (userData) =>{
+      socket.join(userData._id)
+      socket.emit("connected")
+    })
+})
