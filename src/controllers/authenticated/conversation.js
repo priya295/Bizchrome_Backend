@@ -55,7 +55,7 @@ class conversationController {
             return res.status(200).json(userChats)
         } catch (error) {
             console.error("Error fetching chats:", error);
-            return next(error); // Pass
+            // return next(error); // Pass
         }
     }
 
@@ -89,7 +89,7 @@ class conversationController {
             return res.status(201).json({ message: "Message sent successfully", data: message });
         } catch (error) {
             console.error("Error sending message:", error);
-            return next(error);
+            // return next(error);
         }
     }
 
@@ -103,7 +103,7 @@ class conversationController {
             return res.status(200).json(messages)
         } catch (error) {
             console.error("Error sending message:", error);
-            return next(error); 
+            // return next(error); 
         }
     }
 }
