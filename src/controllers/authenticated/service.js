@@ -61,13 +61,16 @@ class serviceController {
   };
 
   static getAllServices = async (req, res) => {
-    const { location, domain } = req.query;
+    const { location, domain, specifications } = req.query;
     let query = {};
     if (location) {
       query["location"] = location;
     }
     if (domain) {
       query["areaOfExpertise.domain"] = domain;
+    }
+    if (specifications) {
+      query["areaOfExpertise.specifications"] = specifications;
     }
 
     const services = await serviceModel
