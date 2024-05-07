@@ -46,7 +46,7 @@ app.use("/auth", userAuth);
 app.use("/validate-token", verifyToken, async (req, res) => {
   const userInfo = await UserModel.findById(
     req.userId,
-    "name email roleType location verification"
+    "name email roleType location verification status"
   );
   return res
     .status(200)
@@ -159,12 +159,19 @@ io.on("connection", (socket) => {
   });
 
   //messages
-  socket.on("setup", (userInfo) => {
+  socket.on("setup", async (userInfo) => {
     socket.join(userInfo?._id);
-    // console.log(userInfo?._id, 'user id')
+    console.log(userInfo?._id, 'user id')
     socket.emit("connected");
+    const check = await UserModel.findByIdAndUpdate(userInfo?._id, { status: 'Online' });
+    console.log(check)
+    // socket.broadcast.emit('user_online', check?.status);
+
   });
 
+  // socket.on('user_online',(userId)=>{
+  //     console.log("get user id for online", userId)
+  // })
   socket.on("join chat", (room) => {
     socket.join(room);
     console.log("user joined room ", room);
