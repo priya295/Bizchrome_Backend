@@ -43,9 +43,11 @@ class userAuthController {
         }
       );
       res.cookie("auth_token", token, {
-        // httpOnly: true,
+
+        httpOnly: true,
         // sameSite: 'none',
-        // secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === "production",
+
         maxAge: 86400000,
       });
       console.log("register request completed");
@@ -73,9 +75,11 @@ class userAuthController {
       expiresIn: "1d",
     });
     res.cookie("auth_token", token, {
-      // httpOnly: true,
+
+      httpOnly: true,
       // sameSite: 'none',
-      // secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
+
       maxAge: 86400000,
     });
     console.log("login request completed");
@@ -125,14 +129,14 @@ class userAuthController {
     });
 
     res.cookie("auth_token", token, {
-      // httpOnly: true,
-      sameSite: 'none',
+      httpOnly: true,
+      // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
 
     console.log("google auth request completed");
-    const redirectUrl = `${process.env.FRONTEND_URL}/app/home`;
+    const redirectUrl = `${process.env.FRONTEND_URL}`;
     return res.redirect(redirectUrl);
     // return res
     //   .status(200)
