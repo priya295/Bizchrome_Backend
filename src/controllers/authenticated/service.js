@@ -22,18 +22,42 @@ class serviceController {
 
   static updateService = async (req, res) => {
     const { userId } = req.params;
+   
+    // const updateService = await serviceModel.updateOne({ userId }, req.body);
+    // if (updateService.modifiedCount > 0) {
+    //   console.log("updateservice req completed");
+    //   return res.status(200).json({
+    //     status: "success",
+    //     message: "changes saved successFully",
+    //   });
+    // } else {
+    //   return res.status(401).json({
+    //     status: "failed",
+    //     message: "something went wrong. Try again !",
+    //   });
+    // }
+    try {
+      console.log(req.body,'check')
+      const updateService = await serviceModel.updateOne({ _id: userId }, { ...req.body }, { new: true });
 
-    const updateService = await serviceModel.updateOne({ userId }, req.body);
-    if (updateService.modifiedCount > 0) {
-      console.log("updateservice req completed");
-      return res.status(200).json({
-        status: "success",
-        message: "changes saved successFully",
-      });
-    } else {
-      return res.status(401).json({
-        status: "failed",
-        message: "something went wrong. Try again !",
+     console.log(updateService,'check what is this')
+      if (updateService.modifiedCount > 0) {
+        console.log('Update service request completed');
+        return res.status(200).json({
+          status: 'success',
+          message: 'Changes saved successfully',
+        });
+      } else {
+        return res.status(404).json({
+          status: 'failed',
+          message: 'User not found or no changes made',
+        });
+      }
+    } catch (error) {
+      console.error('Error updating service:', error);
+      return res.status(500).json({
+        status: 'error',
+        message: 'Something went wrong. Please try again later.',
       });
     }
   };
@@ -75,7 +99,8 @@ class serviceController {
 
     const services = await serviceModel
       .find(query)
-      .populate("userInfo", "name");
+      .populate("userInfo", "name credits")
+      .sort({"userInfo.credits": -1});
     return res.status(200).send(services);
   };
 }

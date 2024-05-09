@@ -8,7 +8,7 @@ const serviceSchema = new mongoose.Schema({
   // pay: {asPer:{type:String,enum:['hour','project']},amount:Number},
   location: { type: String },
   education: [{ from: String, year: String, course: String }],
-  experience: [{ orgName: String, years: Number, role: String }],
+  experience: [{ orgName: String, duration: Number, role: String }],
   connectionSources: {
     portfolio: String,
     linkedIn: String,
@@ -16,7 +16,7 @@ const serviceSchema = new mongoose.Schema({
     contact: String,
   },
   joinedAt: { type: Date, default: Date.now() },
-  areaOfExpertise: [{ domain: String, specifications: [String],skills:[String] }],
+  areaOfExpertise: [{ domain: [String], specifications: [String],skills:[String] }],
 });
 const serviceModel = mongoose.model("Service", serviceSchema);
 export default serviceModel;

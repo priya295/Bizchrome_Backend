@@ -21,6 +21,13 @@ class conversationController {
         console.log(existingChat ,'check chat')
 
         if (existingChat) {
+            existingChat.notify = {
+                message_count: 0,
+                reciver_id: null
+            };
+            
+            await existingChat.save();
+
              res.status(200).json(existingChat);
         }else{
         // Create a new chat if it doesn't exist
@@ -62,7 +69,6 @@ class conversationController {
     static sendMessage = async(req, res) =>{
         try {
             const {content , chatId} = req.body;
-
             if(!content, !chatId){
                 console.log("send data please!")
                 return res.status(400);
@@ -82,8 +88,13 @@ class conversationController {
                 select: 'name email'
             })
 
+            const user = await Chat.findById(chatId)
+            const receiver_id = user.user1.equals(req.userId) ? user.user2 : user.user1
+    
             await Chat.findByIdAndUpdate(chatId,{
-                latestMessage: message
+                latestMessage: message,
+                $inc: { "notify.message_count": 1 }, // Increment message_count by 1
+                "notify.reciver_id": receiver_id // Save user ID in receiver_id
             })
             
             return res.status(201).json({ message: "Message sent successfully", data: message });
