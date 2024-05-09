@@ -33,8 +33,8 @@ router.post(
 );
 router.put(
   "/:userId",
-  validateService,
-  validatorError,
+  // validateService,
+  // validatorError,
   serviceController.updateService
 );
 router.delete("/:userId", serviceController.deleteService);
