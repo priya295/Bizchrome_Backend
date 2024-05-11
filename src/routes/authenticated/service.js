@@ -21,8 +21,8 @@ const validateService = [
     .isMobilePhone()
     .withMessage("Contact must be a valid phone number"),
   check("areaOfExpertise")
-    .isArray()
-    .withMessage("Area of Expertise must be an array"),
+    .notEmpty()
+    .withMessage("Area of Expertise is required"),
 ];
 
 router.post(

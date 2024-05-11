@@ -16,7 +16,7 @@ const serviceSchema = new mongoose.Schema({
     contact: String,
   },
   joinedAt: { type: Date, default: Date.now() },
-  areaOfExpertise: [{ domain: [String], specifications: [String],skills:[String] }],
+  areaOfExpertise: { domain: [String], specifications: [String],skills:[String] },
 });
 const serviceModel = mongoose.model("Service", serviceSchema);
 export default serviceModel;
