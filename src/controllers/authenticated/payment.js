@@ -16,17 +16,15 @@ class paymentController {
         key_secret: process.env.RAZORPAY_KEY_SECRET,
       });
 
-      const packageInfo = await PackageModel.findById(packageId,'discount')
+      const packageInfo = await PackageModel.findById(packageId, "discount");
       let amountToBePaid = amount;
-      if(packageInfo.discount){
+      if (packageInfo.discount) {
         amountToBePaid =
-        parseInt(amount) -
-        parseInt(amount * (packageInfo.discount / 100));
+          parseInt(amount) - parseInt(amount * (packageInfo.discount / 100));
       }
 
-
       const options = {
-        amount : amountToBePaid *100,
+        amount: amountToBePaid * 100,
         currency,
         receipt: crypto.randomBytes(10).toString("hex"),
       };
@@ -47,15 +45,15 @@ class paymentController {
 
   static verifyPayment = async (req, res) => {
     try {
-      console.log(req.body,"requestt");
+      console.log(req.body, "requestt");
       const {
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
         packageId,
       } = req.body;
-      console.log(razorpay_order_id,"orderrr");
-      const userId = req.userId
+      console.log(razorpay_order_id, "orderrr");
+      const userId = req.userId;
 
       const isVerified = validatePaymentVerification(
         { order_id: razorpay_order_id, payment_id: razorpay_payment_id },
@@ -63,6 +61,8 @@ class paymentController {
         process.env.RAZORPAY_KEY_SECRET
       );
       if (isVerified) {
+        const subscription = await PackageModel.findById(packageId);
+        const packageCredits = subscription.credits;
         //store info in db
         await UserModel.findByIdAndUpdate(
           userId,
@@ -78,6 +78,7 @@ class paymentController {
                 },
               },
             },
+            $inc: { credits: packageCredits },
           },
           { new: true }
         );

@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
     },
   ],
   credits:{type:Number,default:10},
-  socket_id:{type:String},
   status:{type:String,enum:['Online','Offline'], default: 'Offline'}
 });
 const UserModel = mongoose.model("User", userSchema);
