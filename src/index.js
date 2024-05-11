@@ -46,7 +46,7 @@ app.use("/auth", userAuth);
 app.use("/validate-token", verifyToken, async (req, res) => {
   const userInfo = await UserModel.findById(
     req.userId,
-    "name email roleType location verification status"
+    "name email roleType location verification status credits"
   );
   return res
     .status(200)
@@ -73,12 +73,13 @@ const server = app.listen(port, () => {
 const io = new Server(server, {
   // pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
   },
 });
 
 // Map to store socket IDs of connected users
 const connectedUsers = new Map();
+const userStatus = new Map();
 
 io.on("connection", (socket) => {
   console.log(`Socket Connected`, socket.id);
@@ -87,16 +88,21 @@ io.on("connection", (socket) => {
   socket.on("user:connect", (userId) => {
     console.log("user is connected", userId);
     connectedUsers.set(userId, socket.id);
+    userStatus.set(userId, 'Online'); // Set user status to "Online"
+    io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
+ 
   });
 
   //video calling
   socket.on("call:request", async (data) => {
     try {
       const { callerUserId, callTo, roomId } = data;
+      console.log(data,"data in call requesttt");
 
       // Fetch user documents from MongoDB using Mongoose
       const callerUser = await UserModel.findById(callerUserId);
       const calleeUser = await UserModel.findById(callTo);
+      console.log(calleeUser,"calle");
 
       if (!calleeUser) {
         console.log("User not found");
@@ -157,17 +163,21 @@ io.on("connection", (socket) => {
       roomId,
     });
   });
+  const userStatus = new Map();
 
   //messages
-  socket.on("setup", async (userInfo) => {
-    socket.join(userInfo?._id);
-    console.log(userInfo?._id, 'user id')
-    socket.emit("connected");
-    const check = await UserModel.findByIdAndUpdate(userInfo?._id, { status: 'Online' });
-    console.log(check)
-    // socket.broadcast.emit('user_online', check?.status);
+  // socket.on("setup", async (userInfo) => {
+  //   socket.join(userInfo?._id);
+  //   console.log(userInfo?._id, "user id");
+  //   socket.emit("connected");
+  //   await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
+  //   userStatus.set(userInfo?._id, "Online");
+  //   socket.emit("connected");
+  //   io.emit("user_status", { userId: userInfo?._id, status: "Online" });
 
-  });
+  //   // socket.broadcast.emit('user_online', check?.status);
+  //   io.emit("user_online", userInfo?._id);
+  // });
 
   // socket.on('user_online',(userId)=>{
   //     console.log("get user id for online", userId)
@@ -189,11 +199,15 @@ io.on("connection", (socket) => {
     }
   });
 
+
   // Cleanup when user disconnects
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
       if (socketId === socket.id) {
+        console.log(userId,"user is disconnected");
         connectedUsers.delete(userId);
+        userStatus.set(userId, 'Offline'); // Update user status to "Offline"
+        io.emit("user_status", { userId, status: 'Offline' });
         break;
       }
     }
