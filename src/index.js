@@ -166,18 +166,18 @@ io.on("connection", (socket) => {
   const userStatus = new Map();
 
   //messages
-  // socket.on("setup", async (userInfo) => {
-  //   socket.join(userInfo?._id);
-  //   console.log(userInfo?._id, "user id");
-  //   socket.emit("connected");
-  //   await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
-  //   userStatus.set(userInfo?._id, "Online");
-  //   socket.emit("connected");
-  //   io.emit("user_status", { userId: userInfo?._id, status: "Online" });
+  socket.on("setup", async (userInfo) => {
+    socket.join(userInfo?._id);
+    console.log(userInfo?._id, "user id");
+    socket.emit("connected");
+    await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
+    userStatus.set(userInfo?._id, "Online");
+    socket.emit("connected");
+    // io.emit("user_status", { userId: userInfo?._id, status: "Online" });
 
-  //   // socket.broadcast.emit('user_online', check?.status);
-  //   io.emit("user_online", userInfo?._id);
-  // });
+    // // socket.broadcast.emit('user_online', check?.status);
+    // io.emit("user_online", userInfo?._id);
+  });
 
   // socket.on('user_online',(userId)=>{
   //     console.log("get user id for online", userId)
@@ -193,8 +193,10 @@ io.on("connection", (socket) => {
     if (!chat.user1 || !chat.user2) return console.log("chat user not defined");
     const senderId = newMessageRecived.sender_id._id;
     if (chat.user1._id === senderId) {
+      console.log("message is endt e")
       socket.in(chat.user2._id).emit("message recieved", newMessageRecived);
     } else {
+      console.log("message is endtjdsjfhjdkfdhkfe")
       socket.in(chat.user1._id).emit("message recieved", newMessageRecived);
     }
   });

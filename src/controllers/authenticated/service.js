@@ -22,21 +22,7 @@ class serviceController {
 
   static updateService = async (req, res) => {
     const { userId } = req.params;
-   
-    // const updateService = await serviceModel.updateOne({ userId }, req.body);
-    // if (updateService.modifiedCount > 0) {
-    //   console.log("updateservice req completed");
-    //   return res.status(200).json({
-    //     status: "success",
-    //     message: "changes saved successFully",
-    //   });
-    // } else {
-    //   return res.status(401).json({
-    //     status: "failed",
-    //     message: "something went wrong. Try again !",
-    //   });
-    // }
-    try {
+      try {
       console.log(req.body,'check')
       const updateService = await serviceModel.updateOne({ _id: userId }, { ...req.body }, { new: true });
 
@@ -79,10 +65,31 @@ class serviceController {
   };
 
   static getService = async (req, res) => {
-    const { userId } = req.params;
-    const service = await serviceModel.findById(userId);
-    return res.status(200).send(service);
+    try {
+      const { userId } = req.params;
+  
+      // Validate userId
+      if (!userId) {
+        return res.status(400).send({ message: "User ID is required." });
+      }
+  
+      // Find service by userId
+      const service = await serviceModel.findById(userId).populate("userInfo","-password");
+  
+      // Check if service exists
+      if (!service) {
+        return res.status(404).send({ message: "Service not found." });
+      }
+  
+      // Return the service
+      return res.status(200).send(service);
+    } catch (error) {
+      // Handle unexpected errors
+      console.error("Error in getService:", error);
+      return res.status(500).send({ message: "Internal server error." });
+    }
   };
+  
 
   static getAllServices = async (req, res) => {
     const { location, domain, specifications } = req.query;
