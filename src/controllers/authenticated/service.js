@@ -92,23 +92,53 @@ class serviceController {
   
 
   static getAllServices = async (req, res) => {
-    const { location, domain, specifications } = req.query;
-    let query = {};
-    if (location) {
-      query["location"] = location;
-    }
-    if (domain) {
-      query["areaOfExpertise.domain"] = domain;
-    }
-    if (specifications) {
-      query["areaOfExpertise.specifications"] = specifications;
+    // const { location, domain, specifications } = req.query;
+    const { location, domain, specifications, page, perPage } = req.query;
+    console.log(location, domain, specifications, page, perPage)
+
+    const pageNumber = parseInt(page) || 1;
+    const pageSize = parseInt(perPage) || 10;
+    const skipCount = (pageNumber - 1) * pageSize;
+
+      let query = {};
+        if (location) {
+            query["location"] = location;
+        }
+        if (domain) {
+            query["areaOfExpertise.domain"] = domain;
+        }
+        if (specifications) {
+            query["areaOfExpertise.specifications"] = specifications;
+        }
+        const totalServices = await serviceModel.countDocuments(query);
+
+        const services = await serviceModel
+            .find(query)
+            .populate("userInfo", "name credits roleType")
+            .sort({ "userInfo.credits": -1 })
+            .skip(skipCount)
+            .limit(pageSize);
+
+        const totalPages = Math.ceil(totalServices / pageSize);
+
+        const paginationResponse = {
+          currentPage: pageNumber,
+          totalItemsInCurrentPage: services.length,
+          totalItems: totalServices,
+          totalPages: totalPages,
+          services,
+      };
+
+      
+      if (pageNumber < totalPages) {
+        paginationResponse.nextPage = `/user/services?location=${location}&domin=${domain}&specifications=${specifications}&page=${pageNumber + 1}&perPage=${pageSize}`;
     }
 
-    const services = await serviceModel
-      .find(query)
-      .populate("userInfo", "name credits roleType")
-      .sort({"userInfo.credits": -1});
-    return res.status(200).send(services);
+    if (pageNumber > 1) {
+        paginationResponse.prevPage = `/user/services?location=${location}&domin=${domain}&specifications=${specifications}&page=${pageNumber - 1}&perPage=${pageSize}`;
+    }
+    
+    return res.status(200).send(paginationResponse);
   };
 }
 export default serviceController;
