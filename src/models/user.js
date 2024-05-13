@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   roleType:{type:String,enum:["freelance","client"]},
+  image:{type:String},
   location:String,
   google_sub: { type: String },
   google_auth: { type: Boolean, default: false },

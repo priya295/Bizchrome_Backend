@@ -12,13 +12,15 @@ class userInfoController {
   static editProfile = async(req, res) =>{
     try {
       const userId = req.userId;
-      const { name, email, location, roleType } = req.body;
+      console.log(req.body,"req bodyy");
+      const { name, email, location, roleType,image } = req.body;
 
       const updateFields = {};
       if (name) updateFields.name = name;
       if (email) updateFields.email = email;
       if (location) updateFields.location = location;
       if (roleType) updateFields.roleType = roleType;
+      if(image) updateFields.image = image;
 
       const updatedUser = await UserModel.findByIdAndUpdate(userId,updateFields, { new: true });
 

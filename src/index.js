@@ -46,7 +46,7 @@ app.use("/auth", userAuth);
 app.use("/validate-token", verifyToken, async (req, res) => {
   const userInfo = await UserModel.findById(
     req.userId,
-    "name email roleType location verification status credits"
+    "name email roleType location verification status credits image"
   );
   return res
     .status(200)

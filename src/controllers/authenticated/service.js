@@ -114,7 +114,7 @@ class serviceController {
 
         const services = await serviceModel
             .find(query)
-            .populate("userInfo", "name credits roleType")
+            .populate("userInfo", "name credits roleType image")
             .sort({ "userInfo.credits": -1 })
             .skip(skipCount)
             .limit(pageSize);
