@@ -84,13 +84,13 @@ const userStatus = new Map();
 io.on("connection", (socket) => {
   console.log(`Socket Connected`, socket.id);
 
+
   // Store the socket ID of the connected user
   socket.on("user:connect", (userId) => {
     console.log("user is connected", userId);
     connectedUsers.set(userId, socket.id);
     userStatus.set(userId, 'Online'); // Set user status to "Online"
     io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
- 
   });
 
   //video calling
@@ -201,7 +201,6 @@ io.on("connection", (socket) => {
     }
   });
 
-
   // Cleanup when user disconnects
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
@@ -214,4 +213,5 @@ io.on("connection", (socket) => {
       }
     }
   });
+
 });
