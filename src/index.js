@@ -93,6 +93,13 @@ io.on("connection", (socket) => {
     io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
   });
 
+  socket.on("user:leave_app", (userId) => {
+    console.log("user leave app", userId);
+    connectedUsers.set(userId, socket.id);
+    userStatus.set(userId, 'Offline'); // Set user status to "Online"
+    io.emit("user_status", { userId, status: 'Offline' }); // Emit status update to all clients
+  });
+
   //video calling
   socket.on("call:request", async (data) => {
     try {

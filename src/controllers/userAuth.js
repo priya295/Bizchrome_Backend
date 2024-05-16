@@ -43,8 +43,8 @@ class userAuthController {
         }
       );
       res.cookie("auth_token", token, {
-        httpOnly: true,
-        // sameSite: 'none',
+        // httpOnly: true,
+        sameSite: 'none',
         secure: process.env.NODE_ENV === "production",
         maxAge: 86400000,
       });
@@ -73,8 +73,8 @@ class userAuthController {
       expiresIn: "1d",
     });
     res.cookie("auth_token", token, {
-      httpOnly: true,
-      // sameSite: 'none',
+      // httpOnly: true,
+      sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
@@ -204,9 +204,10 @@ class userAuthController {
     console.log("logout request");
 
     //creating empty auth token and expires at the time of creation
-    res.cookie("auth_token", "", {
-      expires: new Date(0),
-    });
+    // res.cookie("auth_token", "", {
+    //   expires: new Date(0),
+    // });
+    res.clearCookie("auth_token");
     console.log("logout request completed");
 
     res.status(200).json({status:"success",message:"logout successfully"});
