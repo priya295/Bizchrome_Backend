@@ -44,6 +44,7 @@ class userAuthController {
       );
       res.cookie("auth_token", token, {
         httpOnly: true,
+        // sameSite: 'none',
         secure: process.env.NODE_ENV === "production",
         maxAge: 86400000,
       });
@@ -73,6 +74,7 @@ class userAuthController {
     });
     res.cookie("auth_token", token, {
       httpOnly: true,
+      // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
@@ -123,13 +125,14 @@ class userAuthController {
     });
 
     res.cookie("auth_token", token, {
-      httpOnly: true,
+      // httpOnly: true,
+      sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
 
     console.log("google auth request completed");
-    const redirectUrl = `${process.env.FRONTEND_URL}/app/home`;
+    const redirectUrl = `${process.env.FRONTEND_URL}`;
     return res.redirect(redirectUrl);
     // return res
     //   .status(200)
@@ -206,7 +209,7 @@ class userAuthController {
     });
     console.log("logout request completed");
 
-    res.end();
+    res.status(200).json({status:"success",message:"logout successfully"});
   };
 
   static sendForgotPasswordEmail = async (req, res) => {
