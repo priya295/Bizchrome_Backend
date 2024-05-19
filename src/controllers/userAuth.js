@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { authClient, getUserData } from "../shared/googleAuth.js";
 import transporter from "../config/email.js";
+import newsLetterModel from "../models/newsLetter.js";
 
 class userAuthController {
   static register = async (req, res) => {
@@ -44,7 +45,7 @@ class userAuthController {
       );
       res.cookie("auth_token", token, {
         // httpOnly: true,
-        sameSite: 'none',
+        // sameSite: 'none',
         secure: process.env.NODE_ENV === "production",
         maxAge: 86400000,
       });
@@ -74,7 +75,7 @@ class userAuthController {
     });
     res.cookie("auth_token", token, {
       // httpOnly: true,
-      sameSite: 'none',
+      // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
@@ -126,7 +127,7 @@ class userAuthController {
 
     res.cookie("auth_token", token, {
       // httpOnly: true,
-      sameSite: 'none',
+      // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
@@ -210,7 +211,7 @@ class userAuthController {
     res.clearCookie("auth_token");
     console.log("logout request completed");
 
-    res.status(200).json({status:"success",message:"logout successfully"});
+    res.status(200).json({ status: "success", message: "logout successfully" });
   };
 
   static sendForgotPasswordEmail = async (req, res) => {
@@ -293,6 +294,24 @@ class userAuthController {
           "Password reset successful. You can now log in with your new password.",
       });
     });
+  };
+
+  static subscribeNLetter = async (req, res) => {
+    const {email}=req.body
+    const existingUser = await newsLetterModel.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Already Subscribed" });
+    }
+
+    await newsLetterModel.findOneAndUpdate(
+      { email },
+      { email },
+      { upsert: true, new: true }
+    );
+
+    // Send a success response
+    res.status(201).json({ message: "Subscribed successfully" });
   };
 }
 
