@@ -99,5 +99,6 @@ router.post(
   userAuthController.resetPassword
 );
 
+router.post('/subscribe',userAuthController.subscribeNLetter)
 
 export default router;

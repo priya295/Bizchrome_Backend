@@ -46,7 +46,7 @@ app.use("/auth", userAuth);
 app.use("/validate-token", verifyToken, async (req, res) => {
   const userInfo = await UserModel.findById(
     req.userId,
-    "name email roleType location verification status credits image"
+    "name email roleType location verification status credits image joinedAt"
   );
   return res
     .status(200)
@@ -91,6 +91,13 @@ io.on("connection", (socket) => {
     connectedUsers.set(userId, socket.id);
     userStatus.set(userId, 'Online'); // Set user status to "Online"
     io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
+  });
+
+  socket.on("user:leave_app", (userId) => {
+    console.log("user leave app", userId);
+    connectedUsers.set(userId, socket.id);
+    userStatus.set(userId, 'Offline'); // Set user status to "Online"
+    io.emit("user_status", { userId, status: 'Offline' }); // Emit status update to all clients
   });
 
   //video calling
