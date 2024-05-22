@@ -21,15 +21,21 @@ class conversationController {
         console.log(existingChat ,'check chat')
 
         if (existingChat) {
-            existingChat.notify = {
-                message_count: 0,
-                reciver_id: null
-            };
-            
-            await existingChat.save();
+            // Check if userId matches with notify.reciver_id and if notify is not already null
+            if (existingChat.notify && existingChat.notify.reciver_id && existingChat.notify.reciver_id.equals(req.userId)) {
+                if (existingChat.notify.message_count !== null && existingChat.notify.reciver_id !== null) {
+                    existingChat.notify = {
+                        message_count: 0,
+                        reciver_id: null
+                    };
+    
+                    await existingChat.save();
+                }
+            }
 
-             res.status(200).json(existingChat);
-        }else{
+            return res.status(200).json(existingChat);
+        }
+        else{
         // Create a new chat if it doesn't exist
         const newChat = new Chat({ user1: req.userId, user2: userId });
         await newChat.save();
