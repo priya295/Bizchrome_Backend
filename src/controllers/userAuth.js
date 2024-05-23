@@ -225,13 +225,7 @@ class userAuthController {
         expiresIn: "15m",
       });
 
-      const app_url =
-        process.env.NODE_ENV === "local"
-          ? process.env.FRONTEND_URL
-          : process.env.PRODUCTION_URL;
-
-      console.log(process.env.FRONTEND_URL, "dyufgdf", app_url);
-      const link = `${app_url}/auth/login/reset-password/${user._id}/${token}`;
+      const link = `${process.env.FRONTEND_URL}/auth/login/reset-password/${user._id}/${token}`;
 
       // send email
       const info = await transporter.sendMail({
