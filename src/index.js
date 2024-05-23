@@ -17,6 +17,7 @@ import conversation from "./routes/authenticated/conversation.js";
 import { Server } from "socket.io";
 import path from "path";
 import UserModel from "./models/user.js";
+import Chat from "./models/chat.js";
 // import messageModel from "./models/message.js";
 // import http from 'http'
 // import Server from 'socket-io'
@@ -180,15 +181,8 @@ io.on("connection", (socket) => {
     await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
     userStatus.set(userInfo?._id, "Online");
     socket.emit("connected");
-    // io.emit("user_status", { userId: userInfo?._id, status: "Online" });
-
-    // // socket.broadcast.emit('user_online', check?.status);
-    // io.emit("user_online", userInfo?._id);
   });
 
-  // socket.on('user_online',(userId)=>{
-  //     console.log("get user id for online", userId)
-  // })
   socket.on("join chat", (room) => {
     socket.join(room);
     console.log("user joined room ", room);
@@ -207,6 +201,24 @@ io.on("connection", (socket) => {
       socket.in(chat.user1._id).emit("message recieved", newMessageRecived);
     }
   });
+
+  socket.on('clear_mesg', async (chatId) => {
+    await Chat.findOneAndUpdate(
+      { 
+        _id: chatId, 
+        "notify.message_count": { $ne: 0 }, 
+        "notify.reciver_id": { $ne: null } 
+      },
+      { 
+        $set: { 
+          "notify.message_count": 0, 
+          "notify.reciver_id": null 
+        } 
+      },
+      { new: true }
+    );
+  });
+  
 
   // Cleanup when user disconnects
   socket.on("disconnect", () => {
