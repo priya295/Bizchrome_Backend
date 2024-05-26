@@ -181,9 +181,9 @@ io.on("connection", (socket) => {
   socket.on("setup", async (userInfo) => {
     socket.join(userInfo?._id);
     socket.emit("connected");
-    await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
-    userStatus.set(userInfo?._id, "Online");
-    socket.emit("connected");
+    // await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
+    // userStatus.set(userInfo?._id, "Online");
+    // socket.emit("connected");
   });
 
   socket.on("join chat", (room) => {
