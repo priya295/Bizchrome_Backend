@@ -93,8 +93,8 @@ class serviceController {
 
   static getAllServices = async (req, res) => {
     // const { location, domain, specifications } = req.query;
-    const { location, domain, specifications, page, perPage } = req.query;
-    console.log(location, domain, specifications, page, perPage)
+    const { location, domain, specification, page, perPage } = req.query;
+    console.log(location, domain, specification, page, perPage)
 
     const pageNumber = parseInt(page) || 1;
     const pageSize = parseInt(perPage) || 10;
@@ -107,8 +107,8 @@ class serviceController {
         if (domain) {
             query["areaOfExpertise.domain"] = domain;
         }
-        if (specifications) {
-            query["areaOfExpertise.specifications"] = specifications;
+        if (specification) {
+            query["areaOfExpertise.specifications"] = specification;
         }
         const totalServices = await serviceModel.countDocuments(query);
 
@@ -131,11 +131,11 @@ class serviceController {
 
       
       if (pageNumber < totalPages) {
-        paginationResponse.nextPage = `/user/services?location=${location}&domin=${domain}&specifications=${specifications}&page=${pageNumber + 1}&perPage=${pageSize}`;
+        paginationResponse.nextPage = `/user/services?location=${location}&domin=${domain}&specifications=${specification}&page=${pageNumber + 1}&perPage=${pageSize}`;
     }
 
     if (pageNumber > 1) {
-        paginationResponse.prevPage = `/user/services?location=${location}&domin=${domain}&specifications=${specifications}&page=${pageNumber - 1}&perPage=${pageSize}`;
+        paginationResponse.prevPage = `/user/services?location=${location}&domin=${domain}&specifications=${specification}&page=${pageNumber - 1}&perPage=${pageSize}`;
     }
     
     return res.status(200).send(paginationResponse);
