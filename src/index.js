@@ -87,17 +87,21 @@ io.on("connection", (socket) => {
 
 
   // Store the socket ID of the connected user
-  socket.on("user:connect", (userId) => {
-    console.log("user is connected", userId);
+  socket.on("user:connect", async(userId) => {
     connectedUsers.set(userId, socket.id);
+    console.log("user is connected", userId);
     userStatus.set(userId, 'Online'); // Set user status to "Online"
+    await UserModel.updateOne({_id:userId},{status:"Online"})
+    
     io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
+  
   });
 
-  socket.on("user:leave_app", (userId) => {
+  socket.on("user:leave_app", async(userId) => {
     console.log("user leave app", userId);
     connectedUsers.set(userId, socket.id);
     userStatus.set(userId, 'Offline'); // Set user status to "Online"
+    await UserModel.updateOne({_id:userId},{status:"Offline"})
     io.emit("user_status", { userId, status: 'Offline' }); // Emit status update to all clients
   });
 
@@ -176,11 +180,10 @@ io.on("connection", (socket) => {
   //messages
   socket.on("setup", async (userInfo) => {
     socket.join(userInfo?._id);
-    console.log(userInfo?._id, "user id");
     socket.emit("connected");
-    await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
-    userStatus.set(userInfo?._id, "Online");
-    socket.emit("connected");
+    // await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
+    // userStatus.set(userInfo?._id, "Online");
+    // socket.emit("connected");
   });
 
   socket.on("join chat", (room) => {
@@ -190,14 +193,11 @@ io.on("connection", (socket) => {
 
   socket.on("new message", (newMessageRecived) => {
     var chat = newMessageRecived.chat_id;
-    // console.log(chat,'check new message chat recived')
     if (!chat.user1 || !chat.user2) return console.log("chat user not defined");
     const senderId = newMessageRecived.sender_id._id;
     if (chat.user1._id === senderId) {
-      console.log("message is endt e")
       socket.in(chat.user2._id).emit("message recieved", newMessageRecived);
     } else {
-      console.log("message is endtjdsjfhjdkfdhkfe")
       socket.in(chat.user1._id).emit("message recieved", newMessageRecived);
     }
   });

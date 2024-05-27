@@ -18,8 +18,6 @@ class conversationController {
             ]
         }).populate('user1 user2', '-password').populate('latestMessage')
 
-        console.log(existingChat ,'check chat')
-
         if (existingChat) {
             // Check if userId matches with notify.reciver_id and if notify is not already null
             if (existingChat.notify && existingChat.notify.reciver_id && existingChat.notify.reciver_id.equals(req.userId)) {
@@ -40,6 +38,12 @@ class conversationController {
         const newChat = new Chat({ user1: req.userId, user2: userId });
         await newChat.save();
         const fullchat = await Chat.findOne({_id: newChat._id}).populate("user1 user2","-password")
+
+        await UserModel.findOneAndUpdate(
+            { _id: req.userId, credits: { $gt: 0 } }, // find user with sufficient credits
+            { $inc: { credits: -1 } }, // decrement credits by 1
+            { new: true } // return the updated document
+          );
 
         return res.status(201).json(fullchat);
     }

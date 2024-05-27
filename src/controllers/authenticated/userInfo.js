@@ -42,5 +42,16 @@ class userInfoController {
         .json({ message: "Internal server error", error: error.message });
     }
   };
+
+  static usersStatus=async(req,res)=>{
+    const userStatus = await UserModel.find({}, 'status name').lean();
+
+    const updateFields = userStatus.map((user) => ({
+      ...user,
+      userId: user._id,
+    }));
+    
+    return res.status(200).send(updateFields);
+  }
 }
 export default userInfoController;
