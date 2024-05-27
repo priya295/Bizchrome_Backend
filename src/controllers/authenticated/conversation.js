@@ -40,7 +40,7 @@ class conversationController {
         const fullchat = await Chat.findOne({_id: newChat._id}).populate("user1 user2","-password")
 
         await UserModel.findOneAndUpdate(
-            { _id: req.userId, credits: { $gt: 0 } }, // find user with sufficient credits
+            { _id: userId, credits: { $gt: 0 } }, // find user with sufficient credits
             { $inc: { credits: -1 } }, // decrement credits by 1
             { new: true } // return the updated document
           );
@@ -55,30 +55,29 @@ class conversationController {
 
     static fetchChats = async(req, res) =>{
         try {
-            const userChats = await Chat.find({
-                $or: [
-                    {user1: req.userId},
-                    {user2: req.userId}
-                ]
-            }).populate('user1 user2', "-password").populate("latestMessage").sort({updatedAt: -1})
-            .then(async (result) =>{
-                result = await UserModel.populate(result,{
-                    path: "latestMessage.sender_id",
-                    select: "name email"
-                })
+        const userChats = await Chat.find({
+            $or: [
+                { user1: req.userId },
+                { user2: req.userId }
+            ]
+        }).populate('user1 user2', "-password").populate("latestMessage").sort({ updatedAt: -1 });
 
-                res.status(200).send(result);
-            })
-            return res.status(200).json(userChats)
-        } catch (error) {
-            console.error("Error fetching chats:", error);
-            // return next(error); // Pass
-        }
+        const result = await UserModel.populate(userChats, {
+            path: "latestMessage.sender_id",
+            select: "name email"
+        });
+
+        res.status(200).send(result);
+    } catch (error) {
+        console.error("Error fetching chats:", error);
+        res.status(500).send("An error occurred while fetching chats.");
+        // Optionally: next(error); if you have an error handling middleware
+    }
     }
 
     static sendMessage = async(req, res) =>{
         try {
-            const {content , chatId} = req.body;
+            const {content , chatId, type} = req.body;
             if(!content, !chatId){
                 console.log("send data please!")
                 return res.status(400);
@@ -87,7 +86,8 @@ class conversationController {
             var newMessage = {
                 sender_id: req.userId,
                 content: content,
-                chat_id: chatId
+                chat_id: chatId,
+                type,
             }
 
             var message = await Message.create(newMessage);
