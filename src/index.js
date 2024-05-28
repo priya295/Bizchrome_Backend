@@ -81,6 +81,14 @@ const io = new Server(server, {
 // Map to store socket IDs of connected users
 const connectedUsers = new Map();
 const userStatus = new Map();
+io.of('/').on('connection', (socket) => { // Default namespace
+  console.log('New client connected');
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
+
 
 io.on("connection", (socket) => {
   console.log(`Socket Connected`, socket.id);
