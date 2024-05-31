@@ -21,6 +21,7 @@ class userInfoController {
       if (location) updateFields.location = location;
       if (roleType) updateFields.roleType = roleType;
       if (image) updateFields.image = image;
+      // console.log(updateFields)
 
       const updatedUser = await UserModel.findByIdAndUpdate(
         userId,
@@ -30,6 +31,10 @@ class userInfoController {
       console.log(roleType,"roletypee");
       if (roleType === "client") {
       await serviceModel.deleteOne({ userInfo: userId });
+      }
+      if(location){
+       await serviceModel.findOneAndUpdate( { userInfo: userId }, // Filter by userInfo
+        { location } );
       }
 
       if (!updatedUser) {
