@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     {
       packageId: { type: mongoose.Types.ObjectId, ref: "Package" },
       date: { type: Date },
-      paymentDetails: { paymentId: String, orderId: String, signature: String },
+      paymentDetails: { paymentId: String, orderId: String, signature: Object },
     },
   ],
   credits:{type:Number,default:10},

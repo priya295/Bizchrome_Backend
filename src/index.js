@@ -58,7 +58,7 @@ app.use("/validate-token", verifyToken, async (req, res) => {
 app.use("/google-auth", oAuth);
 
 app.use("/userInfo", verifyToken, userInfo);
-app.use("/user/payment", verifyToken, payment);
+app.use("/user/payment", payment);
 app.use("/user/package", packageRoutes);
 app.use("/user/service", serviceRoutes);
 app.use("/user/chat", verifyToken, conversation);
