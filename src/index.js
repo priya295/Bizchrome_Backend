@@ -33,7 +33,22 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 //cors config
-app.use(cors({ origin: '*', credentials: true }));
+const allowedOrigins = [
+  'https://bizchrome.ai',
+  'https://bizchrome.com',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 //db connection
 connectDb();
