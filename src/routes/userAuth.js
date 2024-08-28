@@ -50,6 +50,19 @@ router.post(
   validatorError,
   userAuthController.login
 );
+router.post(
+  "/admin/login/",
+  [
+    check("email")
+      .notEmpty()
+      .withMessage("Email is required")
+      .isEmail()
+      .withMessage("Email must be valid"),
+    check("password").notEmpty().withMessage("password is required"),
+  ],
+  validatorError,
+  userAuthController.Adminlogin
+);
 
 
 router.get("/google", userAuthController.googleAuth);

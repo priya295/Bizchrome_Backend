@@ -79,9 +79,42 @@ class userAuthController {
       secure: process.env.NODE_ENV === "production",
       maxAge: 86400000,
     });
-    console.log("login request completed");
+    console.log("login request completed",token);
 
     res.status(200).json({ userId: user._id, message: "Login successfull" });
+  };
+
+  static Adminlogin = async (req, res) => {
+    console.log("login request initiated");
+    const { email, password } = req.body;
+    const user = await UserModel.findOne({ email });
+
+    if (!user.isAdmin) {
+      return res.status(400).json({ message: "Your are not a admin" });
+    }
+
+    if (!user || !user?.password) {
+      return res.status(400).json({ message: "Invalid Credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid Credentials" });
+    }
+
+    const token = jwt.sign({ userId: user.id, Admin: "true" }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "1d",
+    });
+    console.log(token)
+    res.cookie("auth_token", token, {
+      // httpOnly: true,
+      // sameSite: 'none',
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 86400000,
+    });
+    console.log("login request completed");
+
+    res.status(200).json({ userId: user._id, token, message: "Login successfull" });
   };
 
   // this route handler is not hit directly from frontend - this is redirect url from googleAuth
@@ -291,7 +324,7 @@ class userAuthController {
   };
 
   static subscribeNLetter = async (req, res) => {
-    const {email}=req.body
+    const { email } = req.body
     const existingUser = await newsLetterModel.findOne({ email });
 
     if (existingUser) {

@@ -12,12 +12,14 @@ import connectDb from "./config/mongo.js";
 import packageRoutes from "./routes/authenticated/package.js";
 import verifyToken from "./middlewares/authentication.js";
 import userInfo from "./routes/authenticated/user.js";
+import adminuser from "./routes/admin/user.js"
 import serviceRoutes from "./routes/authenticated/service.js";
 import conversation from "./routes/authenticated/conversation.js";
 import { Server } from "socket.io";
 import path from "path";
 import UserModel from "./models/user.js";
 import Chat from "./models/chat.js";
+import verifyAdmin from "./middlewares/admin_authentication.js";
 // import messageModel from "./models/message.js";
 // import http from 'http'
 // import Server from 'socket-io'
@@ -77,6 +79,7 @@ app.use("/user/payment", payment);
 app.use("/user/package", packageRoutes);
 app.use("/user/service", serviceRoutes);
 app.use("/user/chat", verifyToken, conversation);
+app.use("/admin",verifyAdmin,adminuser)
 
 //error handler
 app.use(errorHandler);

@@ -24,7 +24,8 @@ const userSchema = new mongoose.Schema({
   ],
   credits:{type:Number,default:10},
   status:{type:String,enum:['Online','Offline'], default: 'Offline'},
-  joinedAt:{type:Date,default:new Date()}
+  joinedAt:{type:Date,default:new Date()},
+  isAdmin :{type:Boolean,default:false}
 });
 const UserModel = mongoose.model("User", userSchema);
 export default UserModel;
