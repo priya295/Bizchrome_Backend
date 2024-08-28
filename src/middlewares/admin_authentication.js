@@ -19,7 +19,6 @@ function getBearerToken(req) {
 const verifyAdmin = (req, res, next) => {
     console.log("token verification initialized")
     const Ctoken = req.cookies["auth_token"];
-    console.log(Ctoken, "Ctoken found");
     let token = getBearerToken(req) || (req.headers.token)
 
     if (req.headers.token && req.headers.token !== "") {

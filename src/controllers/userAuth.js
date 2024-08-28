@@ -60,7 +60,7 @@ class userAuthController {
     console.log("login request initiated");
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
-
+    
     if (!user || !user?.password) {
       return res.status(400).json({ message: "Invalid Credentials" });
     }
@@ -88,7 +88,9 @@ class userAuthController {
     console.log("login request initiated");
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
-
+    if (!user) {
+      return res.status(400).json({ message: "Invalid Credentials" });
+    }
     if (!user.isAdmin) {
       return res.status(400).json({ message: "Your are not a admin" });
     }
