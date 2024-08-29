@@ -79,7 +79,7 @@ app.use("/user/payment", payment);
 app.use("/user/package", packageRoutes);
 app.use("/user/service", serviceRoutes);
 app.use("/user/chat", verifyToken, conversation);
-app.use("/admin",verifyAdmin,adminuser)
+app.use("/admin", verifyAdmin, adminuser)
 
 //error handler
 app.use(errorHandler);
@@ -92,7 +92,13 @@ const server = app.listen(port, () => {
 const io = new Server(server, {
   // pingTimeout: 60000,
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: [
+      process.env.FRONTEND_URL,
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "http://user1.yourdomain.com",
+      "http://user2.yourdomain.com"
+    ]
   },
 });
 
@@ -113,21 +119,21 @@ io.on("connection", (socket) => {
 
 
   // Store the socket ID of the connected user
-  socket.on("user:connect", async(userId) => {
+  socket.on("user:connect", async (userId) => {
     connectedUsers.set(userId, socket.id);
     console.log("user is connected", userId);
     userStatus.set(userId, 'Online'); // Set user status to "Online"
-    await UserModel.updateOne({_id:userId},{status:"Online"})
-    
+    await UserModel.updateOne({ _id: userId }, { status: "Online" })
+
     io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
-  
+
   });
 
-  socket.on("user:leave_app", async(userId) => {
+  socket.on("user:leave_app", async (userId) => {
     console.log("user leave app", userId);
     connectedUsers.set(userId, socket.id);
     userStatus.set(userId, 'Offline'); // Set user status to "Online"
-    await UserModel.updateOne({_id:userId},{status:"Offline"})
+    await UserModel.updateOne({ _id: userId }, { status: "Offline" })
     io.emit("user_status", { userId, status: 'Offline' }); // Emit status update to all clients
   });
 
@@ -135,12 +141,12 @@ io.on("connection", (socket) => {
   socket.on("call:request", async (data) => {
     try {
       const { callerUserId, callTo, roomId } = data;
-      console.log(data,"data in call requesttt");
+      console.log(data, "data in call requesttt");
 
       // Fetch user documents from MongoDB using Mongoose
       const callerUser = await UserModel.findById(callerUserId);
       const calleeUser = await UserModel.findById(callTo);
-      console.log(calleeUser,"calle");
+      console.log(calleeUser, "calle");
 
       if (!calleeUser) {
         console.log("User not found");
@@ -230,27 +236,27 @@ io.on("connection", (socket) => {
 
   socket.on('clear_mesg', async (chatId) => {
     await Chat.findOneAndUpdate(
-      { 
-        _id: chatId, 
-        "notify.message_count": { $ne: 0 }, 
-        "notify.reciver_id": { $ne: null } 
+      {
+        _id: chatId,
+        "notify.message_count": { $ne: 0 },
+        "notify.reciver_id": { $ne: null }
       },
-      { 
-        $set: { 
-          "notify.message_count": 0, 
-          "notify.reciver_id": null 
-        } 
+      {
+        $set: {
+          "notify.message_count": 0,
+          "notify.reciver_id": null
+        }
       },
       { new: true }
     );
   });
-  
+
 
   // Cleanup when user disconnects
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
       if (socketId === socket.id) {
-        console.log(userId,"user is disconnected");
+        console.log(userId, "user is disconnected");
         connectedUsers.delete(userId);
         userStatus.set(userId, 'Offline'); // Update user status to "Offline"
         io.emit("user_status", { userId, status: 'Offline' });
