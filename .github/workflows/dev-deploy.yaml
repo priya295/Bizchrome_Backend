@@ -17,13 +17,20 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - id: deploy
-        name: Deploy to dokku
-        uses: idoberko2/dokku-deploy-github-action@v1.0.1
-        with:
-          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          dokku-host: "35.154.17.159"
-          ssh-port: "22"
-          app-name: "dev-api"
-          dockerfile: "Dockerfile.dev"
-          git-push-flags: "--force"
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t dev-api:latest -f Dockerfile.dev .
+
+      - name: Tag Docker Image
+        run: docker tag dev-api:latest dokku@35.154.17.159:dev-api
+
+      - name: Push to Dokku
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+        run: |
+          ssh-agent bash -c 'ssh-add <(echo "$SSH_PRIVATE_KEY"); docker push dokku@35.154.17.159:dev-api'
