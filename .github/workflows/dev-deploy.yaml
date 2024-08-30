@@ -25,4 +25,5 @@ jobs:
           dokku-host: "35.154.17.159"
           ssh-port: "22"
           app-name: "dev-api"
+          dockerfile: "Dockerfile.dev"
           git-push-flags: "--force"
