@@ -85,7 +85,7 @@ app.use("/admin", verifyAdmin, adminuser)
 //error handler
 app.use(errorHandler);
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8001;
 const server = app.listen(port, () => {
   return console.log(`Express is listening at http://localhost:${port}`);
 });
