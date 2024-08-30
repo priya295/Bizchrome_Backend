@@ -36,6 +36,7 @@ app.use(cookieParser());
 
 //cors config
 const allowedOrigins = [
+  'https://admin.bizchrome.ai',
   'https://bizchrome.ai',
   'https://bizchrome.com',
   'http://localhost:3000'
