@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import serviceModel from "../../models/service.js";
-import UserModel from "../../models/user.js"
+import UserModel from "../../models/user.js"; // Adjust the path as necessary
 
-class userAdmin {
+class Getuser {
+    // Get all users with pagination
     static getAllUsers = async (req, res) => {
         try {
             const { page = 1, limit = 10 } = req.query;
@@ -23,6 +23,24 @@ class userAdmin {
         }
     };
 
+    // Get user by ID
+    static getUserById = async (req, res) => {
+        try {
+            const { userId } = req.params;
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ error: "Invalid User ID" });
+            }
+            const user = await UserModel.findById(userId);
+            if (!user) {
+                return res.status(404).json({ error: "User not found" });
+            }
+            res.status(200).json(user);
+        } catch (error) {
+            res.status(500).json({ error: "Error fetching user" });
+        }
+    };
+
+    // Delete user by ID
     static deleteUser = async (req, res) => {
         try {
             const { userId } = req.params;
@@ -33,15 +51,14 @@ class userAdmin {
             if (!deletedUser) {
                 return res.status(404).json({ error: "User not found" });
             }
-
             res.status(200).json({ message: "User deleted successfully" });
         } catch (error) {
-            console.log(error)
+            console.log(error);
             res.status(500).json({ error: "Error deleting user" });
         }
     };
 
-
+    // Update user by ID
     static updateUser = async (req, res) => {
         try {
             const { userId } = req.params;
@@ -52,21 +69,15 @@ class userAdmin {
                 runValidators: true,
             }).exec();
 
-            // Log the updated user
             if (!updatedUser) {
                 return res.status(404).json({ error: "User not found" });
             }
 
             res.status(200).json(updatedUser);
-
         } catch (error) {
             res.status(500).json({ error: "Error updating user" });
         }
     };
-
-
-
-
-
 }
-export default userAdmin;
+
+export default Getuser;

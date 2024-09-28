@@ -1,22 +1,18 @@
 import mongoose from "mongoose";
+
 const serviceSchema = new mongoose.Schema({
-  userInfo: { type: mongoose.Types.ObjectId, ref: "User" },
-  BannerImage: { type: String },
-  profileImage: { type: String },
-  title: { type: String },
+  user_image: { type: String },
   bio: { type: String },
-  // pay: {asPer:{type:String,enum:['hour','project']},amount:Number},
-  location: { type: String },
-  education: [{ from: String, year: String, course: String }],
-  experience: [{ orgName: String, duration: Number, role: String }],
-  connectionSources: {
-    portfolio: String,
-    linkedIn: String,
-    email: String,
-    contact: String,
-  },
-  joinedAt: { type: Date, default: Date.now() },
-  areaOfExpertise: { domain: [String], specifications: [String],skills:[String] },
+  userInfo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, 
+  category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },  
+  subCategories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' }] ,
+  language: { type: String },
+  college: { type: String },
+  name_of_course: { type: String },
+  course_start: { type: Date },
+  course_end: { type: Date },
+  experience: { type: String }, // Add appropriate type for experience
 });
-const serviceModel = mongoose.model("Service", serviceSchema);
+
+const serviceModel = mongoose.model("Services", serviceSchema);
 export default serviceModel;

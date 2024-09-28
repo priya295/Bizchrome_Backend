@@ -81,7 +81,7 @@ class userAuthController {
     });
     console.log("login request completed",token);
 
-    res.status(200).json({ userId: user._id, message: "Login successfull" });
+    res.status(200).json({ userId: user._id, token , message: "Login successfull" });
   };
 
   static Adminlogin = async (req, res) => {
