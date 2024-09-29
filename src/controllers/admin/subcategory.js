@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import SubCategory from '../../models/SubCategory.js';
+import SubCategory from '../../models/subcategory.js';
 
 class SubCategoryAdmin {
     // Create a new SubCategory
