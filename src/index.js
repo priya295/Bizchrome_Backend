@@ -191,12 +191,9 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
       if (socketId === socket.id) {
-        console.log(userId, "User is disconnected");
-  socket.on("disconnect", () => {
-    for (const [userId, socketId] of connectedUsers) {
-      if (socketId === socket.id) {
+        console.log(userId, "user is disconnected");
         connectedUsers.delete(userId);
-        userStatus.set(userId, 'Offline');
+        userStatus.set(userId, 'Offline'); // Update user status to "Offline"
         io.emit("user_status", { userId, status: 'Offline' });
         break;
       }
