@@ -96,7 +96,13 @@ const io = new Server(server, {
 // Socket events handling
 const connectedUsers = new Map();
 const userStatus = new Map();
+io.of('/').on('connection', (socket) => { // Default namespace
+  console.log('New client connected');
 
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 io.on("connection", (socket) => {
   console.log(`Socket Connected: ${socket.id}`);
 
@@ -144,7 +150,6 @@ io.on("connection", (socket) => {
     const calleeSocketId = connectedUsers.get(leftBy);
     io.to(otherUserSocketId).to(calleeSocketId).emit("call:left", { callWith, leftBy, roomId });
   });
-
   socket.on("setup", async (userInfo) => {
     socket.join(userInfo._id);
     socket.emit("connected");
@@ -152,6 +157,18 @@ io.on("connection", (socket) => {
 
   socket.on("join chat", (room) => {
     socket.join(room);
+    console.log("User joined room ", room);
+  });
+
+  socket.on("new message", (newMessageRecived) => {
+    var chat = newMessageRecived.chat_id;
+    if (!chat.user1 || !chat.user2) return console.log("Chat user not defined");
+    const senderId = newMessageRecived.sender_id._id;
+    if (chat.user1._id === senderId) {
+      socket.in(chat.user2._id).emit("message recieved", newMessageRecived);
+    } else {
+      socket.in(chat.user1._id).emit("message recieved", newMessageRecived);
+    }
   });
 
   socket.on("new message", (newMessageReceived) => {
@@ -160,6 +177,7 @@ io.on("connection", (socket) => {
     const senderId = newMessageReceived.sender_id._id;
     const recipient = chat.user1._id === senderId ? chat.user2._id : chat.user1._id;
     socket.in(recipient).emit("message received", newMessageReceived);
+
   });
 
   socket.on("clear_mesg", async (chatId) => {
@@ -169,7 +187,11 @@ io.on("connection", (socket) => {
       { new: true }
     );
   });
-
+  // Cleanup when user disconnects
+  socket.on("disconnect", () => {
+    for (const [userId, socketId] of connectedUsers) {
+      if (socketId === socket.id) {
+        console.log(userId, "User is disconnected");
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
       if (socketId === socket.id) {
