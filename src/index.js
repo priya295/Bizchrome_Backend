@@ -13,15 +13,16 @@ import packageRoutes from "./routes/authenticated/package.js";
 import verifyToken from "./middlewares/authentication.js";
 import userInfo from "./routes/authenticated/user.js";
 import adminuser from "./routes/admin/user.js";
-import serviceRoutes from "./routes/user/service.js"; // Importing service routes
 import conversation from "./routes/authenticated/conversation.js";
 import { Server } from "socket.io";
+import path from "path";
 import UserModel from "./models/user.js";
 import Chat from "./models/chat.js";
 import verifyAdmin from "./middlewares/admin_authentication.js";
 import categoryRoutes from "./routes/admin/category.js";
 import subcategoryRoutes from "./routes/admin/subcategory.js";
 import usersRoutes from "./routes/user/user.js";
+import ServicesRoutes from "./routes/user/service.js";
 
 // Multer config
 const upload = multer({});
@@ -70,12 +71,12 @@ app.use("/google-auth", oAuth);
 app.use("/userInfo", verifyToken, userInfo);
 app.use("/user/payment", payment);
 app.use("/user/package", packageRoutes);
-app.use("/user/service", serviceRoutes); // Service routes for handling service-related operations
 app.use("/user/chat", verifyToken, conversation);
 app.use("/admin", verifyAdmin, adminuser);
 app.use("/category", categoryRoutes);
 app.use("/subcategory", subcategoryRoutes); // Corrected to lowercase for consistency
 app.use("/users", usersRoutes); // Updated to plural for clarity
+app.use("/user/service", ServicesRoutes);
 
 // Error handler
 app.use(errorHandler);
@@ -93,9 +94,10 @@ const io = new Server(server, {
   },
 });
 
-// Socket events handling
+// Map to store socket IDs of connected users
 const connectedUsers = new Map();
 const userStatus = new Map();
+
 io.of('/').on('connection', (socket) => { // Default namespace
   console.log('New client connected');
 
@@ -103,6 +105,7 @@ io.of('/').on('connection', (socket) => { // Default namespace
     console.log('Client disconnected');
   });
 });
+
 io.on("connection", (socket) => {
   console.log(`Socket Connected: ${socket.id}`);
 
@@ -148,10 +151,16 @@ io.on("connection", (socket) => {
     const { leftBy, callWith, roomId } = data;
     const otherUserSocketId = connectedUsers.get(callWith);
     const calleeSocketId = connectedUsers.get(leftBy);
-    io.to(otherUserSocketId).to(calleeSocketId).emit("call:left", { callWith, leftBy, roomId });
+    io.to(otherUserSocketId).to(calleeSocketId).emit("call:left", {
+      callWith,
+      leftBy,
+      roomId,
+    });
   });
+
+  // Messages
   socket.on("setup", async (userInfo) => {
-    socket.join(userInfo._id);
+    socket.join(userInfo?._id);
     socket.emit("connected");
   });
 
@@ -171,29 +180,30 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("new message", (newMessageReceived) => {
-    const chat = newMessageReceived.chat_id;
-    if (!chat.user1 || !chat.user2) return;
-    const senderId = newMessageReceived.sender_id._id;
-    const recipient = chat.user1._id === senderId ? chat.user2._id : chat.user1._id;
-    socket.in(recipient).emit("message received", newMessageReceived);
-
-  });
-
-  socket.on("clear_mesg", async (chatId) => {
+  socket.on('clear_mesg', async (chatId) => {
     await Chat.findOneAndUpdate(
-      { _id: chatId, "notify.message_count": { $ne: 0 }, "notify.reciver_id": { $ne: null } },
-      { $set: { "notify.message_count": 0, "notify.reciver_id": null } },
+      {
+        _id: chatId,
+        "notify.message_count": { $ne: 0 },
+        "notify.reciver_id": { $ne: null }
+      },
+      {
+        $set: {
+          "notify.message_count": 0,
+          "notify.reciver_id": null
+        }
+      },
       { new: true }
     );
   });
+
   // Cleanup when user disconnects
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
       if (socketId === socket.id) {
-        console.log(userId, "user is disconnected");
+        console.log(userId, "User is disconnected");
         connectedUsers.delete(userId);
-        userStatus.set(userId, 'Offline'); // Update user status to "Offline"
+        userStatus.set(userId, 'Offline');
         io.emit("user_status", { userId, status: 'Offline' });
         break;
       }
