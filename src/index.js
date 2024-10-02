@@ -12,39 +12,40 @@ import connectDb from "./config/mongo.js";
 import packageRoutes from "./routes/authenticated/package.js";
 import verifyToken from "./middlewares/authentication.js";
 import userInfo from "./routes/authenticated/user.js";
-import adminuser from "./routes/admin/user.js"
-import serviceRoutes from "./routes/authenticated/service.js";
+import adminuser from "./routes/admin/user.js";
 import conversation from "./routes/authenticated/conversation.js";
 import { Server } from "socket.io";
 import path from "path";
 import UserModel from "./models/user.js";
 import Chat from "./models/chat.js";
 import verifyAdmin from "./middlewares/admin_authentication.js";
-// import messageModel from "./models/message.js";
-// import http from 'http'
-// import Server from 'socket-io'
+import categoryRoutes from "./routes/admin/category.js";
+import subcategoryRoutes from "./routes/admin/subcategory.js";
+import usersRoutes from "./routes/user/user.js";
+import ServicesRoutes from "./routes/user/service.js";
 
-const app = express();
-// const server = http.createServer(app)
-//multer config
+// Multer config
 const upload = multer({});
+const app = express();
 app.use(upload.any());
 
+// Middleware setup
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-//cors config
+// CORS configuration
 const allowedOrigins = [
   'https://admin.bizchrome.ai',
   'https://bizchrome.ai',
   'https://bizchrome.com',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'https://dev.bizchrome.ai',
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -53,45 +54,41 @@ app.use(cors({
   credentials: true
 }));
 
-//db connection
+// Database connection
 connectDb();
 
-//server check
+// Server check
 app.get("/", (req, res) => {
-  res.send("server is working");
+  res.send("Server is working");
 });
 
+// Routes setup
 app.use("/auth", userAuth);
 app.use("/validate-token", verifyToken, async (req, res) => {
-  const userInfo = await UserModel.findById(
-    req.userId,
-    "name email roleType location verification status credits image joinedAt"
-  );
-  return res
-    .status(200)
-    .json({ message: "Token verified successfully", userInfo });
+  const user = await UserModel.findById(req.userId, "name email roleType location verification status credits image joinedAt");
+  return res.status(200).json({ message: "Token verified successfully", user });
 });
-
-//hit this route for google authentication
 app.use("/google-auth", oAuth);
-
 app.use("/userInfo", verifyToken, userInfo);
 app.use("/user/payment", payment);
 app.use("/user/package", packageRoutes);
-app.use("/user/service", serviceRoutes);
 app.use("/user/chat", verifyToken, conversation);
-app.use("/admin", verifyAdmin, adminuser)
+app.use("/admin", verifyAdmin, adminuser);
+app.use("/category", categoryRoutes);
+app.use("/subcategory", subcategoryRoutes); // Corrected to lowercase for consistency
+app.use("/users", usersRoutes); // Updated to plural for clarity
+app.use("/user/service", ServicesRoutes);
 
-//error handler
+// Error handler
 app.use(errorHandler);
 
 const port = process.env.PORT || 8001;
 const server = app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
+  console.log(`Express is listening at http://localhost:${port}`);
 });
 
+// Socket.io setup
 const io = new Server(server, {
-  // pingTimeout: 60000,
   cors: {
     origin: "*",
   },
@@ -100,6 +97,7 @@ const io = new Server(server, {
 // Map to store socket IDs of connected users
 const connectedUsers = new Map();
 const userStatus = new Map();
+
 io.of('/').on('connection', (socket) => { // Default namespace
   console.log('New client connected');
 
@@ -108,91 +106,48 @@ io.of('/').on('connection', (socket) => { // Default namespace
   });
 });
 
-
 io.on("connection", (socket) => {
-  console.log(`Socket Connected`, socket.id);
+  console.log(`Socket Connected: ${socket.id}`);
 
-
-  // Store the socket ID of the connected user
   socket.on("user:connect", async (userId) => {
     connectedUsers.set(userId, socket.id);
-    console.log("user is connected", userId);
-    userStatus.set(userId, 'Online'); // Set user status to "Online"
-    await UserModel.updateOne({ _id: userId }, { status: "Online" })
-
-    io.emit("user_status", { userId, status: 'Online' }); // Emit status update to all clients
-
+    userStatus.set(userId, 'Online');
+    await UserModel.updateOne({ _id: userId }, { status: "Online" });
+    io.emit("user_status", { userId, status: 'Online' });
   });
 
   socket.on("user:leave_app", async (userId) => {
-    console.log("user leave app", userId);
     connectedUsers.set(userId, socket.id);
-    userStatus.set(userId, 'Offline'); // Set user status to "Online"
-    await UserModel.updateOne({ _id: userId }, { status: "Offline" })
-    io.emit("user_status", { userId, status: 'Offline' }); // Emit status update to all clients
+    userStatus.set(userId, 'Offline');
+    await UserModel.updateOne({ _id: userId }, { status: "Offline" });
+    io.emit("user_status", { userId, status: 'Offline' });
   });
 
-  //video calling
+  // Video call events
   socket.on("call:request", async (data) => {
-    try {
-      const { callerUserId, callTo, roomId } = data;
-      console.log(data, "data in call requesttt");
+    const { callerUserId, callTo, roomId } = data;
+    const callerUser = await UserModel.findById(callerUserId);
+    const calleeUser = await UserModel.findById(callTo);
+    const calleeSocketId = connectedUsers.get(callTo);
 
-      // Fetch user documents from MongoDB using Mongoose
-      const callerUser = await UserModel.findById(callerUserId);
-      const calleeUser = await UserModel.findById(callTo);
-      console.log(calleeUser, "calle");
-
-      if (!calleeUser) {
-        console.log("User not found");
-        return;
-      }
-
-      console.log(
-        `Incoming call from ${callerUser.name} (${callerUser.email}) for room: ${roomId}`
-      );
-
-      // Get the callee user's socket ID from the connectedUsers map
-      const calleeSocketId = connectedUsers.get(callTo);
-
-      if (calleeSocketId) {
-        // Emit a "call:incoming" event only to the callee user
-        io.to(calleeSocketId).emit("call:incoming", {
-          caller: callerUser,
-          roomId,
-        });
-      } else {
-        console.log("Callee user not connected");
-      }
-    } catch (error) {
-      console.error("Error handling call request:", error);
+    if (calleeSocketId) {
+      io.to(calleeSocketId).emit("call:incoming", { caller: callerUser, roomId });
     }
   });
 
   socket.on("call:accept", async (data) => {
-    console.log("call accepted event", data);
     const { acceptedBy, callFrom, roomId } = data;
     const callerSocketId = connectedUsers.get(callFrom);
-    io.to(callerSocketId).emit("call:accepted", {
-      caller: callerSocketId,
-      acceptedBy,
-      roomId,
-    });
+    io.to(callerSocketId).emit("call:accepted", { acceptedBy, roomId });
   });
 
   socket.on("call:decline", async (data) => {
-    console.log("call declined event", data);
     const { declinedBy, callFrom, roomId } = data;
     const callerSocketId = connectedUsers.get(callFrom);
-    io.to(callerSocketId).emit("call:declined", {
-      caller: callerSocketId,
-      declinedBy,
-      roomId,
-    });
+    io.to(callerSocketId).emit("call:declined", { declinedBy, roomId });
   });
 
   socket.on("call:leave", async (data) => {
-    console.log("call leave event", data);
     const { leftBy, callWith, roomId } = data;
     const otherUserSocketId = connectedUsers.get(callWith);
     const calleeSocketId = connectedUsers.get(leftBy);
@@ -202,25 +157,21 @@ io.on("connection", (socket) => {
       roomId,
     });
   });
-  const userStatus = new Map();
 
-  //messages
+  // Messages
   socket.on("setup", async (userInfo) => {
     socket.join(userInfo?._id);
     socket.emit("connected");
-    // await UserModel.findByIdAndUpdate(userInfo?._id, { status: "Online" });
-    // userStatus.set(userInfo?._id, "Online");
-    // socket.emit("connected");
   });
 
   socket.on("join chat", (room) => {
     socket.join(room);
-    console.log("user joined room ", room);
+    console.log("User joined room ", room);
   });
 
   socket.on("new message", (newMessageRecived) => {
     var chat = newMessageRecived.chat_id;
-    if (!chat.user1 || !chat.user2) return console.log("chat user not defined");
+    if (!chat.user1 || !chat.user2) return console.log("Chat user not defined");
     const senderId = newMessageRecived.sender_id._id;
     if (chat.user1._id === senderId) {
       socket.in(chat.user2._id).emit("message recieved", newMessageRecived);
@@ -246,18 +197,16 @@ io.on("connection", (socket) => {
     );
   });
 
-
   // Cleanup when user disconnects
   socket.on("disconnect", () => {
     for (const [userId, socketId] of connectedUsers) {
       if (socketId === socket.id) {
-        console.log(userId, "user is disconnected");
+        console.log(userId, "User is disconnected");
         connectedUsers.delete(userId);
-        userStatus.set(userId, 'Offline'); // Update user status to "Offline"
+        userStatus.set(userId, 'Offline');
         io.emit("user_status", { userId, status: 'Offline' });
         break;
       }
     }
   });
-
 });
