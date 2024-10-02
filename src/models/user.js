@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   roleType: { type: String, enum: ["freelance", "client"], default: "client" },
   location: { type: String, default: "Rajasthan" },
   image: { type: String },
-  Mobile_no: { type: Number },
+  mobileNumber: { type: Number },
   bio: { type: String },
   Category: { type: String },
   Subcategory: [{ type: mongoose.Types.ObjectId, ref: "Subcategory" }], // Changed to an array of ObjectIds
