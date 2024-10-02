@@ -17,6 +17,9 @@ jobs:
           ref: dev
           fetch-depth: 0
 
+      - name: Rename Dockerfile.dev to Dockerfile
+        run: mv Dockerfile.dev Dockerfile
+
       - id: deploy
         name: Deploy to dokku
         uses: idoberko2/dokku-deploy-github-action@v1.0.1
@@ -24,5 +27,6 @@ jobs:
           ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
           dokku-host: "35.154.17.159"
           ssh-port: "22"
-          app-name: "biz-api"
+          app-name: "dev-api"
           git-push-flags: "--force"
+          remote-branch: "dev"

@@ -65,7 +65,7 @@ app.get("/", (req, res) => {
 // Routes setup
 app.use("/auth", userAuth);
 app.use("/validate-token", verifyToken, async (req, res) => {
-  const user = await UserModel.findById(req.userId, "name email roleType location verification status credits image joinedAt");
+  const user = await UserModel.findById(req.userId, "name email roleType location verification status credits image joinedAt mobileNumber");
   return res.status(200).json({ message: "Token verified successfully", user });
 });
 app.use("/google-auth", oAuth);
@@ -82,8 +82,7 @@ app.use("/user/service", ServicesRoutes);
 // Error handler
 app.use(errorHandler);
 
-// Server setup
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8001;
 const server = app.listen(port, () => {
   console.log(`Express is listening at http://localhost:${port}`);
 });

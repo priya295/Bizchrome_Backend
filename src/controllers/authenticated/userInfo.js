@@ -5,7 +5,7 @@ class userInfoController {
   static getLoggedInUser = async (req, res) => {
     const userInfo = await UserModel.findById(
       req.userId,
-      "name email roleType location verification credits"
+      "name email roleType location verification credits MobileNumber"
     );
     return res.status(200).send(userInfo);
   };
@@ -13,7 +13,7 @@ class userInfoController {
   static editProfile = async (req, res) => {
     try {
       const userId = req.userId;
-      const { name, email, location, roleType, image } = req.body;
+      const { name, email, location, roleType, image, mobileNumber } = req.body; // Add mobileNumber here
 
       const updateFields = {};
       if (name) updateFields.name = name;
@@ -21,7 +21,8 @@ class userInfoController {
       if (location) updateFields.location = location;
       if (roleType) updateFields.roleType = roleType;
       if (image) updateFields.image = image;
-      // console.log(updateFields)
+      if (mobileNumber) updateFields.mobileNumber = mobileNumber; // Add mobileNumber to updateFields
+
 
       const updatedUser = await UserModel.findByIdAndUpdate(
         userId,
