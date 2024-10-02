@@ -40,7 +40,7 @@ const allowedOrigins = [
   'https://bizchrome.ai',
   'https://bizchrome.com',
   'http://localhost:3000',
-  'https:/dev.bizchrome.ai',
+  'https://dev.bizchrome.ai',
 ];
 
 app.use(cors({
