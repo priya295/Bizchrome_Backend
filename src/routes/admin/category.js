@@ -9,5 +9,6 @@ router.get('/categories/:id', CategoryAdmin.getCategory); // Get a single catego
 router.post('/categories', CategoryAdmin.createCategory); // Create a new category
 router.put('/categories/:id', CategoryAdmin.updateCategory); // Update an existing category
 router.delete('/categories/:id', CategoryAdmin.deleteCategory); // Delete a category
+router.get('/category/name/:name', CategoryAdmin.getCategoryByName);
 
 export default router;
