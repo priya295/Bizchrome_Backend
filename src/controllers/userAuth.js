@@ -43,7 +43,7 @@ class userAuthController {
           expiresIn: "1d",
         }
       );
-      res.cookie("auth_token", token, {
+      res.cookie("token", token, {
         // httpOnly: true,
         // sameSite: 'none',
         secure: process.env.NODE_ENV === "production",
@@ -117,7 +117,7 @@ class userAuthController {
       expiresIn: "1d",
     });
     console.log(token)
-    res.cookie("auth_token", token, {
+    res.cookie("token", token, {
       // httpOnly: true,
       // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
@@ -169,7 +169,7 @@ class userAuthController {
       expiresIn: "1d",
     });
 
-    res.cookie("auth_token", token, {
+    res.cookie("token", token, {
       // httpOnly: true,
       // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
@@ -249,10 +249,10 @@ class userAuthController {
     console.log("logout request");
 
     //creating empty auth token and expires at the time of creation
-    // res.cookie("auth_token", "", {
+    // res.cookie("token", "", {
     //   expires: new Date(0),
     // });
-    res.clearCookie("auth_token");
+    res.clearCookie("token");
     console.log("logout request completed");
 
     res.status(200).json({ status: "success", message: "logout successfully" });
