@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-name: prod Deployment
-=======
 name: Prod Deployment
-
->>>>>>> origin/dev
 
 on:
   push:
@@ -26,13 +21,8 @@ jobs:
         name: Deploy to dokku
         uses: idoberko2/dokku-deploy-github-action@v1.0.1
         with:
-<<<<<<< HEAD
-          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          dokku-host: "35.154.17.159"
-=======
           ssh-private-key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
           dokku-host: "13.200.43.28"
->>>>>>> origin/dev
           ssh-port: "22"
           app-name: "biz-api"
           git-push-flags: "--force"
