@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   ],
   credits: { type: Number, default: 1 },
   status: { type: String, enum: ['Online', 'Offline'], default: 'Offline' },
-  joinedAt: { type: Date, default: new Date() },
+  joinedAt: { type: Date, default: Date.now },
   isAdmin: { type: Boolean, default: false },
 });
 

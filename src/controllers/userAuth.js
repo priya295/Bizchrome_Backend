@@ -85,6 +85,7 @@ class userAuthController {
 
       // Send the userId and token in the response
       res.status(200).json({ userId: user._id, token, message: "Login successful" });
+      console.log(user._id);
   } catch (error) {
       console.error("Error during login:", error);
       res.status(500).json({ message: "Internal Server Error" });
