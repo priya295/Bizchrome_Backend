@@ -43,7 +43,7 @@ class userAuthController {
           expiresIn: "1d",
         }
       );
-      res.cookie("auth_token", token, {
+      res.cookie("token", token, {
         // httpOnly: true,
         // sameSite: 'none',
         secure: process.env.NODE_ENV === "production",
@@ -57,32 +57,41 @@ class userAuthController {
   };
 
   static login = async (req, res) => {
-    console.log("login request initiated");
+    console.log("Login request initiated");
+
     const { email, password } = req.body;
-    const user = await UserModel.findOne({ email });
-    
-    if (!user || !user?.password) {
-      return res.status(400).json({ message: "Invalid Credentials" });
-    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid Credentials" });
-    }
+    try {
+      // Find user by email
+      const user = await UserModel.findOne({ email });
+      if (!user || !user.password) {
+          return res.status(400).json({ message: "Invalid Credentials" });
+      }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: "1d",
-    });
-    res.cookie("auth_token", token, {
-      // httpOnly: true,
-      // sameSite: 'none',
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 86400000,
-    });
-    console.log("login request completed",token);
+      console.log("User found:", user);
 
-    res.status(200).json({ userId: user._id, token , message: "Login successfull" });
-  };
+      // Check password match
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+          return res.status(400).json({ message: "Invalid Credentials" });
+      }
+
+      // Generate JWT token
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+          expiresIn: "1d", // Token expiration time
+      });
+
+      console.log("Login successful. Token generated:", { token, userId: user._id });
+
+      // Send the userId and token in the response
+      res.status(200).json({ userId: user._id, token, message: "Login successful" });
+  } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 
   static Adminlogin = async (req, res) => {
     console.log("login request initiated");
@@ -108,7 +117,7 @@ class userAuthController {
       expiresIn: "1d",
     });
     console.log(token)
-    res.cookie("auth_token", token, {
+    res.cookie("token", token, {
       // httpOnly: true,
       // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
@@ -160,7 +169,7 @@ class userAuthController {
       expiresIn: "1d",
     });
 
-    res.cookie("auth_token", token, {
+    res.cookie("token", token, {
       // httpOnly: true,
       // sameSite: 'none',
       secure: process.env.NODE_ENV === "production",
@@ -240,10 +249,10 @@ class userAuthController {
     console.log("logout request");
 
     //creating empty auth token and expires at the time of creation
-    // res.cookie("auth_token", "", {
+    // res.cookie("token", "", {
     //   expires: new Date(0),
     // });
-    res.clearCookie("auth_token");
+    res.clearCookie("token");
     console.log("logout request completed");
 
     res.status(200).json({ status: "success", message: "logout successfully" });
