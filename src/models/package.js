@@ -14,7 +14,7 @@ const PackageModel = mongoose.model("Package", packageSchema);
 
 // Default packages to be inserted into the database
 const defaultPackages = [
-  { name: "Basic", credits: 10, amount: 100 },
+  { name: "Basic", credits: 2, amount: 100 },
   { name: "Standard", credits: 23, amount: 200 },
   { name: "Premium", credits: 35, amount: 300 ,discount:10},
 ];

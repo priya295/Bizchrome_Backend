@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
       paymentDetails: { paymentId: String, orderId: String, signature: Object },
     },
   ],
-  credits: { type: Number, default: 1 },
+  credits: { type: Number, default: 0},
   status: { type: String, enum: ['Online', 'Offline'], default: 'Offline' },
   joinedAt: { type: Date, default: Date.now },
   isAdmin: { type: Boolean, default: false },
