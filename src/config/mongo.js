@@ -11,7 +11,7 @@ const connectDb = async () => {
   //   });
 
   //db connection for production
-mongoose.connect(process.env.MONGODB_CONNECTION_STRING)
+mongoose.connect(process.env.MONGODB_CONNECTION_STRING,{dbName:"crmcluster"})
     .then(() =>
         console.log(
             "Connected to database",
